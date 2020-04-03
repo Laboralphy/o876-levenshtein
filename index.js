@@ -4,7 +4,7 @@
  * @param b {string} string cible
  * @returns {number}
  */
-export function distance(a, b) {
+function distance(a, b) {
     if (a.length === 0) {
         return b.length;
     }
@@ -51,7 +51,7 @@ export function distance(a, b) {
  * @param aStrings
  * @returns {*}
  */
-export function suggest(sSubject, aStrings) {
+function suggest(sSubject, aStrings) {
     return aStrings
         .map(s => ({
             s,
@@ -63,3 +63,7 @@ export function suggest(sSubject, aStrings) {
 }
 
 
+module.exports = {
+	distance,
+	suggest
+}
