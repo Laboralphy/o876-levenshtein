@@ -34,9 +34,13 @@ function distance(a, b) {
             if (b.charAt(i - 1) === a.charAt(j - 1)) {
                 matrix[i][j] = matrix[i - 1][j - 1];
             } else {
-                matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution
-                    Math.min(matrix[i][j - 1] + 1, // insertion
-                        matrix[i - 1][j] + 1)); // deletion
+                matrix[i][j] = Math.min(
+                    matrix[i - 1][j - 1] + 1, // substitution
+                    Math.min(
+                        matrix[i][j - 1] + 1, // insertion
+                        matrix[i - 1][j] + 1
+                    )
+                ); // deletion
             }
         }
     }
@@ -46,20 +50,23 @@ function distance(a, b) {
 
 
 /**
- * checks all strings inside aStrings and selects the most similar to sSubject
- * @param sSubject
- * @param aStrings
+ * checks a subject string against a set of strings and selects the most similar strings to the subject string.
+ * @param sSubject {string} the string to be checked
+ * @param aStrings {string[]} a list of suggested strings
+ * @param [count] {number}
+ * @param [distance] {number}
  * @returns {*}
  */
-function suggest(sSubject, aStrings) {
+function suggest(sSubject, aStrings, { count = 1, relevance = Infinity } = {}) {
     return aStrings
         .map(s => ({
             s,
             d: distance(sSubject, s)
         }))
+        .filter(x => x.d <= relevance)
         .sort((a, b) => a.d - b.d)
-        .shift()
-        .s;
+        .slice(0, count)
+        .map(x => x.s);
 }
 
 

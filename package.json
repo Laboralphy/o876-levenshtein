@@ -1,0 +1,26 @@
+{
+  "name": "@laboralphy/did-you-mean",
+  "version": "1.0.0",
+  "description": "This tool suggest a list of most closest words to a given entry.",
+  "main": "index.js",
+  "scripts": {
+    "test": "jasmine tests/SuggestTest.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/laboralphy/o876-levenshtein.git"
+  },
+  "keywords": [
+    "node.js",
+    "javascript"
+  ],
+  "author": "raphael.marandet@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/laboralphy/o876-levenshtein/issues"
+  },
+  "homepage": "https://github.com/laboralphy/o876-levenshtein#readme",
+  "devDependencies": {
+    "jasmine": "^3.5.0"
+  }
+}
