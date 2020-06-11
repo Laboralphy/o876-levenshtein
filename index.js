@@ -69,7 +69,6 @@ function suggest(sSubject, aStrings, { count = 1, relevance = Infinity } = {}) {
         .map(x => x.s);
 }
 
-
 module.exports = {
 	distance,
 	suggest

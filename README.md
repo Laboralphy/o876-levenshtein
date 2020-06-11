@@ -12,7 +12,7 @@ list of suggested valid entity names so should the user make a mistype, they may
 This is what this library does.
 
 ## Example
-```js
+```
 console.log(suggest("PARSI", ["PARIS", "BORDEAUX", "LILLE", .... ]));
 console.log(suggest("BRDEAUX", ["PARIS", "BORDEAUX", "LILLE", .... ]));
 console.log(suggest("LILE", ["PARIS", "BORDEAUX", "LILLE", .... ]));
