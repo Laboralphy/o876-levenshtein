@@ -1,6 +1,6 @@
 {
   "name": "@laboralphy/did-you-mean",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "This tool suggest a list of most closest words to a given entry.",
   "main": "index.js",
   "scripts": {

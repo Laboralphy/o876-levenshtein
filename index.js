@@ -94,9 +94,9 @@ function getScore (sCommand, sSuggest) {
  * @param aList {string[]}
  * @returns {string[]}
  */
-function suggest (sWords, aList, { count = 1, relevance = Infinity } = {}) {
+function suggest (sWords, aList, { count = 0, relevance = Infinity } = {}) {
   const aCommandArray = stripAccents(sWords).toLowerCase().split(' ')
-  return aList.map(x => ({
+  const aResults =  aList.map(x => ({
     text: x,
     score: computeArrayScore(
       _recognizeSev(
@@ -107,7 +107,15 @@ function suggest (sWords, aList, { count = 1, relevance = Infinity } = {}) {
   }))
     .filter(x => x.score <= relevance)
     .sort((a, b) => a.score - b.score)
-    .slice(0, count)
+  if (aResults.length === 0) {
+    return aResults
+  }
+  // déterminer le top score
+  const nTopScore = aResults[0].score
+  // filtrer les top scores et les autres
+  const aTopScores = aResults.filter(({ score }) => score === nTopScore)
+  const aLowerScores = aResults.filter(({ score }) => score !== nTopScore).slice(0, count)
+  return aTopScores.concat(aLowerScores)
     .map(({ text }) => text)
 }
 

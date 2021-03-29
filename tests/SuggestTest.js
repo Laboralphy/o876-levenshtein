@@ -10,8 +10,22 @@ describe('#suggest - find a word', function() {
   it('displays at most 3 suggestions but if word is to different (2 char operations or more)', function() {
     expect(suggest('PARIS', ['PARIS', 'BORDEAUX', 'LILLE'], {count: 3, relevance: 2})).toEqual(['PARIS']);
   });
-  it('displays at most 2 suggestions', function() {
-    expect(suggest('PARIS', ['PARIS', 'BORDEAUX', 'LILLE'], {count: 2})).toEqual(['PARIS', 'LILLE']);
+  it('displays at most N suggestions', function() {
+    expect(suggest('PARIS', ['PARIS', 'BORDEAUX', 'LILLE'], {count: 2})).toEqual(['PARIS', 'LILLE', 'BORDEAUX']);
+    expect(suggest('PARIS', ['PARIS', 'BORDEAUX', 'LILLE'], {count: 1})).toEqual(['PARIS', 'LILLE']);
+    expect(suggest('PARIS', ['PARIS', 'BORDEAUX', 'LILLE'], {count: 0})).toEqual(['PARIS']);
+  });
+  it('displays one more suggestion thant the exact same', function() {
+    expect(suggest('truce', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], {count: 0})).toEqual(['a Wutai ferry ticket to Truce']);
+    expect(suggest('ticket', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], {count: 0})).toEqual(['a Wutai ferry ticket to Truce', 'a Wutai ferry ticket to Cinnabar Island']);
   });
 });
 
