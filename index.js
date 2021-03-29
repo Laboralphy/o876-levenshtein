@@ -48,25 +48,67 @@ function distance(a, b) {
     return matrix[b.length][a.length];
 }
 
+/**
+ * Delete all diacritic characters : replace with ascii7bits characters : é -> e
+ * @param sText {string}
+ * @returns {string}
+ */
+function stripAccents (sText) {
+  return sText.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
+function _recognizeOne (sCommand, aSuggest) {
+  // chaque mots de suggest est comparé à command
+  // on obtien un tableau de distance
+  // on trie le tableau
+  return aSuggest
+    .map((s, i) => distance(sCommand, s))
+    .reduce((prev, curr) => Math.min(prev, curr), Infinity)
+}
+
+function _recognizeSev (command, suggest) {
+  const aSuggest = Array.isArray(suggest) ? suggest : suggest.split(' ')
+  const aCommand = Array.isArray(command) ? command : command.split(' ')
+  return aCommand.map(s => _recognizeOne(s, aSuggest))
+}
+
+function computeArrayScore (a, n, p) {
+  const a2 = a.slice(0, n)
+  while (a2.length < n) {
+    a2.push(0)
+  }
+  return a2.reduce((prev, curr) => prev * p + curr, 0)
+}
+
+function getScore (sCommand, sSuggest) {
+  return computeArrayScore(_recognizeSev(
+    stripAccents(sCommand).toLowerCase(),
+    stripAccents(sSuggest).toLowerCase()
+  ), 3, 10)
+}
 
 /**
- * checks a subject string against a set of strings and selects the most similar strings to the subject string.
- * @param sSubject {string} the string to be checked
- * @param aStrings {string[]} a list of suggested strings
- * @param [count] {number}
- * @param [distance] {number}
- * @returns {*}
+ * Compare sWords with each string in the aList array.
+ * returns the most resembling string
+ * @param sWords {string}
+ * @param aList {string[]}
+ * @returns {string[]}
  */
-function suggest(sSubject, aStrings, { count = 1, relevance = Infinity } = {}) {
-    return aStrings
-        .map(s => ({
-            s,
-            d: distance(sSubject, s)
-        }))
-        .filter(x => x.d <= relevance)
-        .sort((a, b) => a.d - b.d)
-        .slice(0, count)
-        .map(x => x.s);
+function suggest (sWords, aList, { count = 1, relevance = Infinity } = {}) {
+  const aCommandArray = stripAccents(sWords).toLowerCase().split(' ')
+  return aList.map(x => ({
+    text: x,
+    score: computeArrayScore(
+      _recognizeSev(
+        aCommandArray,
+        stripAccents(x).toLowerCase().split(' ')
+      ), 3, 10
+    )
+  }))
+    .filter(x => x.score <= relevance)
+    .sort((a, b) => a.score - b.score)
+    .slice(0, count)
+    .map(({ text }) => text)
 }
 
 module.exports = {

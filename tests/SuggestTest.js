@@ -31,3 +31,18 @@ describe('#distance', function() {
     expect(distance('PARIS', 'PIRAS')).toBe(2);
   });
 })
+
+describe('#suggest', function () {
+  it('long phrase', function () {
+    expect(suggest(
+      'fery tocket truc',
+      [
+        'a Wutai ferry ticket to Truce',
+        'a Wutai ferry ticket to Cinnabar Island',
+        'another thing'
+      ], {relevance: 234}
+    )).toEqual([
+      'a Wutai ferry ticket to Truce'
+    ])
+  })
+})
