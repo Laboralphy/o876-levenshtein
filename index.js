@@ -121,5 +121,6 @@ function suggest (sWords, aList, { count = 0, relevance = Infinity } = {}) {
 
 module.exports = {
 	distance,
-	suggest
+	suggest,
+	stripAccents
 }
