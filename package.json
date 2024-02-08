@@ -1,10 +1,10 @@
 {
   "name": "@laboralphy/did-you-mean",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "This tool suggest a list of most closest words to a given entry.",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine tests/SuggestTest.js"
+    "test": "jasmine tests/*Test.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,6 @@
   },
   "homepage": "https://github.com/laboralphy/o876-levenshtein#readme",
   "devDependencies": {
-    "jasmine": "^3.5.0"
+    "jasmine": "^5.1.0"
   }
 }

@@ -119,8 +119,37 @@ function suggest (sWords, aList, { count = 0, relevance = Infinity } = {}) {
     .map(({ text }) => text)
 }
 
+function simplify (sInput) {
+    return sInput
+        .split(' ')
+        .filter(s => s.trim().length > 0)
+        .map(s => stripAccents(s).trim())
+        .join(' ')
+}
+
+function suggest2 (sInput, aList, { full = false, threshold = 0.4, limit = 3 } = {}) {
+    sInput = simplify(sInput)
+    const nLen = sInput.length
+    return aList
+        .map(sugg => {
+            const d = distance(sInput, simplify(sugg))
+            const score = d / sugg.length
+            return {
+                value: sugg,
+                distance: d,
+                score
+            }
+        })
+        .filter(({ score }) => score <= threshold)
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, limit)
+        .map(x => full ? x : x.value )
+}
+
 module.exports = {
 	distance,
 	suggest,
-	stripAccents
+    suggest2,
+	stripAccents,
+    getScore
 }
