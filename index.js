@@ -58,18 +58,20 @@ function stripAccents (sText) {
   return sText.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
+function packSpaces (sInput) {
+    return sInput.replace(/\s{2,}/g, ' ')
+}
+
+
 /**
  * Simplify string (strips accents, compact multiple whitespace
  * @param sInput {string}
  * @returns {string}
  */
 function simplify (sInput) {
-    return sInput
-        .split(' ')
-        .filter(s => s.trim().length > 0)
-        .map(s => stripAccents(s).trim())
-        .join(' ')
+    return packSpaces(stripAccents(sInput))
 }
+
 
 /**
  * Will suggest one or more items from the list, sorted by levenshteing distance with the input
@@ -79,15 +81,22 @@ function simplify (sInput) {
  * @param full {boolean} if true, returns a structure, instead of mere strings
  * @param threshold {number} the lower the stricter
  * @param limit {number} limits results
- * @returns {string | string[] | any[]}
+ * @param multiterm {boolean} uses multi term search, more efficient to suggest when suggestion is full of multiterm strings
+ * @returns {null, string | string[] | {value: string, distance: number, score: number, index: number}[]}
  */
-function suggest (sInput, aList, { exact = false, full = false, threshold = 0.4, limit = 3 } = {}) {
+function suggest (sInput, aList, {
+    exact = false,
+    full = false,
+    threshold = 0.4,
+    limit = 3,
+    multiterm = false
+} = {}) {
     sInput = exact ? sInput : simplify(sInput)
-    const aSimplifiedList = exact ? aList : aList.map(s => simplify(s))
+    const aSimplifiedList = exact ? aList : aList.map(s => packSpaces(s))
     const r = aSimplifiedList
         .map((sugg, isugg) => {
-            const d = distance(sInput, sugg)
-            const score = d / sugg.length
+            const d = multiterm ? 1 : distance(sInput, simplify(sugg))
+            const score = multiterm ? getMultiTermScore(sInput, sugg) : d  / sugg.length
             return {
                 value: sugg,
                 distance: d,
@@ -114,14 +123,30 @@ function suggest (sInput, aList, { exact = false, full = false, threshold = 0.4,
         .slice(0, Math.max(1, limit))
         .map(x => (limit === 0 || full) ? x : x.value )
     if (limit === 0) {
-        return r.length > 0 ? r[0].value : sInput
+        return r.length > 0 ? r[0].value : null
     } else {
         return r
     }
 }
 
+function getMultiTermScore (sInput, sLongItem, { minTermLength = 3, exact = false, threshold = 0.25 } = {}) {
+    const a = []
+    const aLongItems = sLongItem.split(' ').filter(s => s.length >= minTermLength)
+    const aTerms = sInput.split(' ')
+    for (let iTerm = 0, l = aTerms.length; iTerm < l; ++iTerm) {
+        const term = aTerms[iTerm]
+        const r = suggest(term, aLongItems, { exact, threshold, full: true, limit: 1 })
+        if (r.length > 0) {
+            a.push(r[0])
+            aLongItems.splice(0, r[0].index)
+        }
+    }
+    return a.reduce((prev, curr) => prev * curr.score, 1)
+}
+
 module.exports = {
 	distance,
 	suggest,
-	stripAccents
+	stripAccents,
+    getMultiTermScore
 }

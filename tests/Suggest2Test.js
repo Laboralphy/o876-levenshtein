@@ -1,4 +1,4 @@
-const { distance, suggest } = require('../index.js');
+const { getMultiTermScore, distance, suggest } = require('../index.js');
 
 describe('#suggest - find a word', function() {
   it('should find the word when this word is in list', function() {
@@ -34,12 +34,12 @@ describe('#suggest - find a word', function() {
       'a Wutai ferry ticket to Truce',
       'a Wutai ferry ticket to Cinnabar Island',
       'Bye'
-    ], { threshold: 0.4, limit: 0 })).toEqual('truce');
+    ], { threshold: 0.4, limit: 0 })).toBeNull();
     expect(suggest('ticket truce', [
       'a Wutai ferry ticket to Truce',
       'a Wutai ferry ticket to Cinnabar Island',
       'Bye'
-    ], { threshold: 0.4, limit: 0 })).toEqual('ticket truce');
+    ], { threshold: 0.4, limit: 0 })).toBeNull();
     expect(suggest('ticket truce', [
       'a Wutai ferry ticket to Truce',
       'a Wutai ferry ticket to Cinnabar Island',
@@ -66,4 +66,41 @@ describe('#distance', function() {
   it('should return 2 when two letters are swapped', function() {
     expect(distance('PARIS', 'PIRAS')).toBe(2);
   });
+})
+
+fdescribe('autoriser recherche avec un input de peu de mot', function () {
+  it('should return "Vendeur à la sauvette" when inputing "vendeur"', function () {
+    const aList = [
+        'Gobelin',
+        'Personne du peuple',
+        'Vendeur de saucisses',
+        'Vendeur à la sauvette'
+    ]
+    const aSpellList = [
+        'projectiles magiques',
+        'projection d\'acide',
+        'flèche acide',
+        'flèche enflammée',
+        'invisibilité',
+        'peau de pierre'
+    ]
+    const aShopList = [
+        'a Wutai ferry ticket to Truce',
+        'a Wutai ferry ticket to Cinnabar Island',
+        'Bye'
+    ]
+    expect(suggest('vendeur', aList, { multiterm: true, limit: 0 })).toBe('Vendeur de saucisses')
+    expect(suggest('vendeur sauvett', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
+    expect(suggest('vendeur saucisse', aList, { multiterm: true, limit: 0 })).toBe('Vendeur de saucisses')
+    expect(suggest('saucisse', aList, { multiterm: true, limit: 0 })).toBe('Vendeur de saucisses')
+    expect(suggest('sauvete', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
+    expect(suggest('sauve', aList, { multiterm: true, limit: 0 })).toBeNull()
+    expect(suggest('sauvet', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
+    expect(suggest('fleche acide', aSpellList, { multiterm: true, limit: 0 })).toBe('flèche acide')
+    expect(suggest('truce', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Truce')
+    expect(suggest('truc', aShopList, { multiterm: true, limit: 0 })).toBeNull()
+    expect(suggest('cinnabar', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('cinnaba', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('cinnab', aShopList, { multiterm: true, limit: 0 })).toBeNull()
+  })
 })
