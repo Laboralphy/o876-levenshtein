@@ -72,7 +72,6 @@ function simplify (sInput) {
     return packSpaces(stripAccents(sInput))
 }
 
-
 /**
  * Will suggest one or more items from the list, sorted by levenshteing distance with the input
  * @param sInput {string} searched string
@@ -96,7 +95,7 @@ function suggest (sInput, aList, {
     const r = aSimplifiedList
         .map((sugg, isugg) => {
             const d = multiterm ? 1 : distance(sInput, simplify(sugg))
-            const score = multiterm ? getMultiTermScore(sInput, sugg) : d  / sugg.length
+            const score = multiterm ? getMultiTermScore(sInput, sugg, { threshold: 0.9 }) : d / sugg.length
             return {
                 value: sugg,
                 distance: d,
@@ -129,7 +128,7 @@ function suggest (sInput, aList, {
     }
 }
 
-function getMultiTermScore (sInput, sLongItem, { minTermLength = 3, exact = false, threshold = 0.25 } = {}) {
+function getMultiTermScore (sInput, sLongItem, { minTermLength = 3, exact = false, threshold = Infinity } = {}) {
     const a = []
     const aLongItems = sLongItem.split(' ').filter(s => s.length >= minTermLength)
     const aTerms = sInput.split(' ')
@@ -138,7 +137,7 @@ function getMultiTermScore (sInput, sLongItem, { minTermLength = 3, exact = fals
         const r = suggest(term, aLongItems, { exact, threshold, full: true, limit: 1 })
         if (r.length > 0) {
             a.push(r[0])
-            aLongItems.splice(0, r[0].index)
+            aLongItems.splice(0, r[0].index + 1)
         }
     }
     return a.reduce((prev, curr) => prev * curr.score, 1)

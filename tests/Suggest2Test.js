@@ -68,7 +68,7 @@ describe('#distance', function() {
   });
 })
 
-fdescribe('autoriser recherche avec un input de peu de mot', function () {
+describe('autoriser recherche avec un input de peu de mot', function () {
   it('should return "Vendeur à la sauvette" when inputing "vendeur"', function () {
     const aList = [
         'Gobelin',
@@ -85,22 +85,50 @@ fdescribe('autoriser recherche avec un input de peu de mot', function () {
         'peau de pierre'
     ]
     const aShopList = [
-        'a Wutai ferry ticket to Truce',
-        'a Wutai ferry ticket to Cinnabar Island',
-        'Bye'
+      'another thing',
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island'
     ]
     expect(suggest('vendeur', aList, { multiterm: true, limit: 0 })).toBe('Vendeur de saucisses')
     expect(suggest('vendeur sauvett', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
     expect(suggest('vendeur saucisse', aList, { multiterm: true, limit: 0 })).toBe('Vendeur de saucisses')
     expect(suggest('saucisse', aList, { multiterm: true, limit: 0 })).toBe('Vendeur de saucisses')
     expect(suggest('sauvete', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
-    expect(suggest('sauve', aList, { multiterm: true, limit: 0 })).toBeNull()
+    expect(suggest('sauve', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
+    expect(suggest('sauv', aList, { multiterm: true, limit: 0 })).toBeNull()
     expect(suggest('sauvet', aList, { multiterm: true, limit: 0 })).toBe('Vendeur à la sauvette')
     expect(suggest('fleche acide', aSpellList, { multiterm: true, limit: 0 })).toBe('flèche acide')
     expect(suggest('truce', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Truce')
-    expect(suggest('truc', aShopList, { multiterm: true, limit: 0 })).toBeNull()
+    expect(suggest('ferry tocket truce', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Truce')
+    expect(suggest('truc', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Truce')
+    expect(suggest('tru', aShopList, { multiterm: true, limit: 0 })).toBeNull()
     expect(suggest('cinnabar', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Cinnabar Island')
     expect(suggest('cinnaba', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Cinnabar Island')
-    expect(suggest('cinnab', aShopList, { multiterm: true, limit: 0 })).toBeNull()
+    expect(suggest('cinnab', aShopList, { multiterm: true, limit: 0 })).toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('cinab', aShopList, { multiterm: true, limit: 0 })).toBeNull()
+  })
+  it('should answer "a Wutai ferry ticket to Cinnabar Island" when input is "fery tocket cinbra"', function () {
+    const aShopList = [
+      'another thing',
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island'
+    ]
+    expect(suggest('fery tocket cinbra', aShopList, { multiterm: true, limit: 0 }))
+        .toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('fery tocket cinabra', aShopList, { multiterm: true, limit: 0 }))
+        .toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('fer tick cin', aShopList, { multiterm: true, limit: 0 }))
+        .toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('fe ti ci', aShopList, { multiterm: true, limit: 0 }))
+        .toBeNull()
+  })
+  it('should not answer when input is to short', function () {
+    const aShopList = [
+      'another thing',
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island'
+    ]
+    expect(suggest('fer tick cin', aShopList, { multiterm: true, limit: 0 }))
+        .toBeNull()
   })
 })
