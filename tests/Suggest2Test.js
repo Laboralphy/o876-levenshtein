@@ -22,6 +22,35 @@ describe('#suggest - find a word', function() {
       'Bye'
     ], { threshold: Infinity, limit: 1 })).toEqual(['a Wutai ferry ticket to Truce']);
   });
+  it('should return "a Wutai ferry ticket to Truce" when specifying only "truce" and limit 0', function() {
+    expect(suggest('truce', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], { threshold: Infinity, limit: 0 })).toEqual('a Wutai ferry ticket to Truce');
+  });
+  it('should return "" when specifying only "Shambalar" and limit 0', function() {
+    expect(suggest('truce', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], { threshold: 0.4, limit: 0 })).toEqual('truce');
+    expect(suggest('ticket truce', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], { threshold: 0.4, limit: 0 })).toEqual('ticket truce');
+    expect(suggest('ticket truce', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], { threshold: 0.6, limit: 0 })).toEqual('a Wutai ferry ticket to Truce');
+    expect(suggest('ferry ticket truce', [
+      'a Wutai ferry ticket to Truce',
+      'a Wutai ferry ticket to Cinnabar Island',
+      'Bye'
+    ], { threshold: 0.4, limit: 0 })).toEqual('a Wutai ferry ticket to Truce');
+  });
 });
 
 describe('#distance', function() {

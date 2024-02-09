@@ -1,8 +1,9 @@
 /**
- * compute levenshtein distance between 2 strings
+ * compute levenshtein distance between 2 strings.
+ * this the number of modifications needed to go from a string to another string
  * @param a {string} string source
  * @param b {string} string cible
- * @returns {number}
+ * @returns {number} editing distance
  */
 function distance(a, b) {
     if (a.length === 0) {
@@ -57,36 +58,11 @@ function stripAccents (sText) {
   return sText.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
-function _recognizeOne (sCommand, aSuggest) {
-  // chaque mots de suggest est comparé à command
-  // on obtien un tableau de distance
-  // on trie le tableau
-  return aSuggest
-    .map((s, i) => distance(sCommand, s))
-    .reduce((prev, curr) => Math.min(prev, curr), Infinity)
-}
-
-function _recognizeSev (command, suggest) {
-  const aSuggest = Array.isArray(suggest) ? suggest : suggest.split(' ')
-  const aCommand = Array.isArray(command) ? command : command.split(' ')
-  return aCommand.map(s => _recognizeOne(s, aSuggest))
-}
-
-function computeArrayScore (a, n, p) {
-  const a2 = a.slice(0, n)
-  while (a2.length < n) {
-    a2.push(0)
-  }
-  return a2.reduce((prev, curr) => prev * p + curr, 0)
-}
-
-function getScore (sCommand, sSuggest) {
-  return computeArrayScore(_recognizeSev(
-    stripAccents(sCommand).toLowerCase(),
-    stripAccents(sSuggest).toLowerCase()
-  ), 3, 10)
-}
-
+/**
+ * Simplify string (strips accents, compact multiple whitespace
+ * @param sInput {string}
+ * @returns {string}
+ */
 function simplify (sInput) {
     return sInput
         .split(' ')
@@ -95,10 +71,20 @@ function simplify (sInput) {
         .join(' ')
 }
 
+/**
+ * Will suggest one or more items from the list, sorted by levenshteing distance with the input
+ * @param sInput {string} searched string
+ * @param aList {string[]} potential suggestions
+ * @param exact {boolean} if true, do not simplified strings before computing levenshtein distance
+ * @param full {boolean} if true, returns a structure, instead of mere strings
+ * @param threshold {number} the lower the stricter
+ * @param limit {number} limits results
+ * @returns {string | string[] | any[]}
+ */
 function suggest (sInput, aList, { exact = false, full = false, threshold = 0.4, limit = 3 } = {}) {
     sInput = exact ? sInput : simplify(sInput)
     const aSimplifiedList = exact ? aList : aList.map(s => simplify(s))
-    return aSimplifiedList
+    const r = aSimplifiedList
         .map((sugg, isugg) => {
             const d = distance(sInput, sugg)
             const score = d / sugg.length
@@ -125,13 +111,17 @@ function suggest (sInput, aList, { exact = false, full = false, threshold = 0.4,
             }
             return a.value.localeCompare(b.value)
         })
-        .slice(0, limit)
-        .map(x => full ? x : x.value )
+        .slice(0, Math.max(1, limit))
+        .map(x => (limit === 0 || full) ? x : x.value )
+    if (limit === 0) {
+        return r.length > 0 ? r[0].value : sInput
+    } else {
+        return r
+    }
 }
 
 module.exports = {
 	distance,
 	suggest,
-	stripAccents,
-    getScore
+	stripAccents
 }
