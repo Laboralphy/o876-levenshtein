@@ -87,38 +87,6 @@ function getScore (sCommand, sSuggest) {
   ), 3, 10)
 }
 
-/**
- * Compare sWords with each string in the aList array.
- * returns the most resembling string
- * @param sWords {string}
- * @param aList {string[]}
- * @returns {string[]}
- */
-function suggest (sWords, aList, { count = 0, relevance = Infinity } = {}) {
-  const aCommandArray = stripAccents(sWords).toLowerCase().split(' ')
-  const aResults =  aList.map(x => ({
-    text: x,
-    score: computeArrayScore(
-      _recognizeSev(
-        aCommandArray,
-        stripAccents(x).toLowerCase().split(' ')
-      ), 3, 10
-    )
-  }))
-    .filter(x => x.score <= relevance)
-    .sort((a, b) => a.score - b.score)
-  if (aResults.length === 0) {
-    return aResults
-  }
-  // déterminer le top score
-  const nTopScore = aResults[0].score
-  // filtrer les top scores et les autres
-  const aTopScores = aResults.filter(({ score }) => score === nTopScore)
-  const aLowerScores = aResults.filter(({ score }) => score !== nTopScore).slice(0, count)
-  return aTopScores.concat(aLowerScores)
-    .map(({ text }) => text)
-}
-
 function simplify (sInput) {
     return sInput
         .split(' ')
@@ -127,21 +95,36 @@ function simplify (sInput) {
         .join(' ')
 }
 
-function suggest2 (sInput, aList, { full = false, threshold = 0.4, limit = 3 } = {}) {
-    sInput = simplify(sInput)
-    const nLen = sInput.length
-    return aList
-        .map(sugg => {
-            const d = distance(sInput, simplify(sugg))
+function suggest (sInput, aList, { exact = false, full = false, threshold = 0.4, limit = 3 } = {}) {
+    sInput = exact ? sInput : simplify(sInput)
+    const aSimplifiedList = exact ? aList : aList.map(s => simplify(s))
+    return aSimplifiedList
+        .map((sugg, isugg) => {
+            const d = distance(sInput, sugg)
             const score = d / sugg.length
             return {
                 value: sugg,
                 distance: d,
-                score
+                score,
+                index: isugg
             }
         })
         .filter(({ score }) => score <= threshold)
-        .sort((a, b) => a.distance - b.distance)
+        .sort((a, b) => {
+            let r = a.score - b.score
+            if (r !== 0) {
+                return r
+            }
+            r = a.distance - b.distance
+            if (r !== 0) {
+                return r
+            }
+            r = a.index - b.index
+            if (r !== 0) {
+                return r
+            }
+            return a.value.localeCompare(b.value)
+        })
         .slice(0, limit)
         .map(x => full ? x : x.value )
 }
@@ -149,7 +132,6 @@ function suggest2 (sInput, aList, { full = false, threshold = 0.4, limit = 3 } =
 module.exports = {
 	distance,
 	suggest,
-    suggest2,
 	stripAccents,
     getScore
 }
