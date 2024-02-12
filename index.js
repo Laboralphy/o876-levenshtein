@@ -95,7 +95,7 @@ function suggest (sInput, aList, {
     const r = aSimplifiedList
         .map((sugg, isugg) => {
             const d = multiterm ? 1 : distance(sInput, simplify(sugg))
-            const score = multiterm ? getMultiTermScore(sInput, sugg, { threshold: 0.9 }) : d / sugg.length
+            const score = multiterm ? getMultiTermScore(sInput, sugg, { threshold }) : d / sugg.length
             return {
                 value: sugg,
                 distance: d,
@@ -138,6 +138,8 @@ function getMultiTermScore (sInput, sLongItem, { minTermLength = 3, exact = fals
         if (r.length > 0) {
             a.push(r[0])
             aLongItems.splice(0, r[0].index + 1)
+        } else {
+            return Infinity
         }
     }
     return a.reduce((prev, curr) => prev * curr.score, 1)

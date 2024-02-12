@@ -113,12 +113,14 @@ describe('autoriser recherche avec un input de peu de mot', function () {
       'a Wutai ferry ticket to Truce',
       'a Wutai ferry ticket to Cinnabar Island'
     ]
-    expect(suggest('fery tocket cinbra', aShopList, { multiterm: true, limit: 0 }))
+    expect(suggest('cinabar', aShopList, { multiterm: true, limit: 0 }))
         .toBe('a Wutai ferry ticket to Cinnabar Island')
-    expect(suggest('fery tocket cinabra', aShopList, { multiterm: true, limit: 0 }))
+    expect(suggest('fery tocket cinabar', aShopList, { multiterm: true, limit: 0 }))
+        .toBe('a Wutai ferry ticket to Cinnabar Island')
+    expect(suggest('fery tocket cinabra', aShopList, { multiterm: true, limit: 0, threshold: 0.6 }))
         .toBe('a Wutai ferry ticket to Cinnabar Island')
     expect(suggest('fer tick cin', aShopList, { multiterm: true, limit: 0 }))
-        .toBe('a Wutai ferry ticket to Cinnabar Island')
+        .toBeNull()
     expect(suggest('fe ti ci', aShopList, { multiterm: true, limit: 0 }))
         .toBeNull()
   })
