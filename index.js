@@ -97,6 +97,7 @@ function suggest (sInput, aList, {
             const d = multiterm ? 1 : distance(sInput, simplify(sugg))
             const score = multiterm ? getMultiTermScore(sInput, sugg, { threshold }) : d / sugg.length
             return {
+                input: sInput,
                 value: sugg,
                 distance: d,
                 score,
@@ -128,14 +129,14 @@ function suggest (sInput, aList, {
     }
 }
 
-function getMultiTermScore (sInput, sLongItem, { minTermLength = 3, exact = false, threshold = Infinity } = {}) {
+function getMultiTermScore (sInput, sLongItem, { exact = false, threshold = Infinity } = {}) {
     const a = []
-    const aLongItems = sLongItem.split(' ').filter(s => s.length >= minTermLength)
+    const aLongItems = sLongItem.split(' ')
     const aTerms = sInput.split(' ')
     for (let iTerm = 0, l = aTerms.length; iTerm < l; ++iTerm) {
         const term = aTerms[iTerm]
         const r = suggest(term, aLongItems, { exact, threshold, full: true, limit: 1 })
-        if (r.length > 0) {
+        if (r && r.length > 0) {
             a.push(r[0])
             aLongItems.splice(0, r[0].index + 1)
         } else {

@@ -1,5 +1,45 @@
 const { getMultiTermScore, distance, suggest } = require('../index.js');
 
+describe("Levenshtein Distance Function", function() {
+
+  it("should return 0 for two empty strings", function() {
+    expect(distance("", "")).toBe(0);
+  });
+
+  it("should return 0 for identical strings", function() {
+    expect(distance("test", "test")).toBe(0);
+  });
+
+  it("should return 1 for a single substitution", function() {
+    expect(distance("test", "tent")).toBe(1);
+  });
+
+  it("should return 1 for a single insertion", function() {
+    expect(distance("test", "tests")).toBe(1);
+  });
+
+  it("should return 1 for a single deletion", function() {
+    expect(distance("test", "tes")).toBe(1);
+  });
+
+  it("should return the length of the non-empty string when one string is empty", function() {
+    expect(distance("", "test")).toBe(4);
+  });
+
+  it("should return 3 for the example 'kitten' -> 'sitting'", function() {
+    expect(distance("kitten", "sitting")).toBe(3);
+  });
+
+  it("should return 2 for the example 'flaw' -> 'lawn'", function() {
+    expect(distance("flaw", "lawn")).toBe(2);
+  });
+
+  it("should return 5 for the example 'intention' -> 'execution'", function() {
+    expect(distance("intention", "execution")).toBe(5);
+  });
+
+})
+
 describe('#suggest - find a word', function() {
   it('should find the word when this word is in list', function() {
     expect(suggest('PARIS', ['PARIS', 'BORDEAUX', 'LILLE'])).toEqual(['PARIS']);
@@ -132,5 +172,40 @@ describe('autoriser recherche avec un input de peu de mot', function () {
     ]
     expect(suggest('fer tick cin', aShopList, { multiterm: true, limit: 0 }))
         .toBeNull()
+  })
+})
+
+describe('bug de la boule de feu', function () {
+  it('should return Boule de feu when suggesting somthin for Boule de feu, among "missiles magiques" and "boule de feu"', function () {
+    const aSpells = ['Missiles magiques', 'Boule de feu']
+    expect(suggest('boule', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boule', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boule de', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boule de feu', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boul feu', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boul fe', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+  })
+  it('should return Boule de feu when suggesting somthin for Boule de feu, among "Boule de foudre" and "boule de feu"', function () {
+    const aSpells = ['Boule de foudre', 'Boule de feu']
+    expect(suggest('boule', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de foudre')
+    expect(suggest('Boule', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de foudre')
+    expect(suggest('Boule de', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de foudre')
+    expect(suggest('Boule de feu', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boul feu', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boul fe', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de feu')
+    expect(suggest('Boul foud', aSpells, { multiterm: true, limit: 0 }))
+        .toBe('Boule de foudre')
   })
 })
