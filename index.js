@@ -59,7 +59,7 @@ function stripAccents (sText) {
 }
 
 function packSpaces (sInput) {
-    return sInput.replace(/\s{2,}/g, ' ')
+    return sInput.replace(/\s{2,}/g, ' ').trim()
 }
 
 

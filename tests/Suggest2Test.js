@@ -209,3 +209,10 @@ describe('bug de la boule de feu', function () {
         .toBe('Boule de foudre')
   })
 })
+
+describe('correction bug trailing spaces', function () {
+  it ('should return "épée courte rouillée" when submitting "Épée courte", "Epée courte rouillée", "Epée courte rouillée" with input : "épée rouillée " (with a trailing space)', function () {
+    const x = suggest('épée rouillée ', ['Épée courte', 'Épée courte rouillée', 'Épée courte rouillée'], { multiterm: true, limit: 0})
+    expect(x).toBe('Épée courte rouillée')
+  })
+})
