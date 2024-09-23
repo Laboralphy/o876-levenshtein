@@ -69,7 +69,7 @@ function packSpaces (sInput) {
  * @returns {string}
  */
 function simplify (sInput) {
-    return packSpaces(stripAccents(sInput))
+    return packSpaces(stripAccents(sInput)).toLowerCase()
 }
 
 /**
@@ -146,9 +146,85 @@ function getMultiTermScore (sInput, sLongItem, { exact = false, threshold = Infi
     return a.reduce((prev, curr) => prev * curr.score, 1)
 }
 
+function prefDistance (a, b) {
+    let d = distance(a, b)
+    for (let i = 0, l = Math.min(a.length, b.length); i < l; ++i) {
+        if (a.charAt(i) === b.charAt(i)) {
+            --d
+        } else {
+            break
+        }
+    }
+    return Math.max(0, d)
+}
+
+
+function getRelevanceMatrix (aWords, aLong) {
+    return aLong.map(longItem => aWords
+        .map(wordItem => ({
+            long: longItem,
+            word: wordItem,
+            distance: prefDistance(wordItem, longItem)
+        })))
+}
+
+function filterWords (sWords) {
+    return simplify(sWords)
+        .split(' ')
+        .filter(l => l.length > 2)
+}
+
+function buildRelevanceStruct (sInput, aList, { full = false, limit = 3, threshold = 5 } = {}) {
+    const sortDiff = (a, b) => a - b
+    const computeScore = (prev, curr, i) => prev + curr / Math.pow(2, i)
+    const aInputWords = filterWords(sInput)
+    const aResult = aList
+        .map(l => {
+            const aEntryWords = filterWords(l)
+            const aRelevanceMatrix = getRelevanceMatrix(aInputWords, aEntryWords)
+            const matrix = aRelevanceMatrix
+                .flat()
+                .sort((a, b) => a.distance - b.distance)
+            const inputScore = {}
+            const suggestScore = {}
+            matrix.forEach(w => {
+                if (!(w.long in inputScore)) {
+                    inputScore[w.long] = w.distance
+                }
+                inputScore[w.long] = Math.min(inputScore[w.long], w.distance)
+                if (!(w.word in suggestScore)) {
+                    suggestScore[w.word] = w.distance
+                }
+                suggestScore[w.word] = Math.min(suggestScore[w.word], w.distance)
+            })
+            const suggestDistances = Object.values(suggestScore).sort(sortDiff)
+            const inputDistances = Object.values(inputScore).sort(sortDiff)
+            const computedSuggestedScore = suggestDistances.reduce(computeScore, 0)
+            const computedInputScore = inputDistances.reduce(computeScore, 0)
+            const score = matrix.length > 0
+                ? (computedSuggestedScore + computedInputScore) / 2
+                : Infinity
+            return {
+                suggest: l,
+                input: sInput,
+                matrix,
+                inputScore,
+                suggestScore,
+                suggestDistances,
+                inputDistances,
+                score
+            }
+        })
+        .sort((a, b) => a.score - b.score)
+        .filter(({ score }) => score <= threshold)
+    return limit === 0
+        ? aResult.shift()?.suggest || null
+        : aResult.slice(0, limit).map(x => full ? x : x.suggest)
+}
+
+
 module.exports = {
 	distance,
-	suggest,
-	stripAccents,
-    getMultiTermScore
+	suggest: buildRelevanceStruct,
+    simplify
 }
