@@ -83,12 +83,21 @@ const REGEXP_SPACE_SPLITTER = /\s+/
  * returns '' if no string was found
  * @param inputString {string}
  * @param proposalStrings {string[]}
+ * @param maxDistance {number}
+ * @param full {boolean}
+ * @param count {number}
  * @returns {string|string[]}
  */
-function suggest(inputString, proposalStrings) {
+function suggest(inputString, proposalStrings, {
+    maxDistance = 5,
+    full = false,
+    count = 0
+} = {}) {
     const inputTokens = simplify(inputString).split(REGEXP_SPACE_SPLITTER);
     let bestMatch = '';
     let minDistance = Infinity;
+
+    const aMatches = [];
 
     for (const proposal of proposalStrings) {
         const proposalTokens = simplify(proposal).split(REGEXP_SPACE_SPLITTER);
@@ -109,8 +118,28 @@ function suggest(inputString, proposalStrings) {
             minDistance = distance;
             bestMatch = proposal;
         }
+
+        if (count > 0) {
+            aMatches.push({
+                distance,
+                proposal
+            })
+        }
     }
-    return bestMatch;
+
+    if (count > 0) {
+        return aMatches
+            .filter(({ distance }) => distance <= maxDistance)
+            .sort((a, b) => a.distance - b.distance)
+            .slice(0, count)
+            .map(s => full ? s : s.proposal);
+    }
+
+    if (minDistance > maxDistance) {
+        return ''
+    } else {
+        return full ? { distance: minDistance, proposal: bestMatch } : bestMatch;
+    }
 }
 
 module.exports = {

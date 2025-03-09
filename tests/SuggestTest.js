@@ -37,7 +37,7 @@ describe('when choosing one ticket among several', function () {
             'a Wutai ferry ticket to Cinnabar Island',
             'Bye'
         ]
-        expect(suggest('shambalar', proposals)).toEqual('a Wutai ferry ticket to Cinnabar Island');
+        expect(suggest('shambalar', proposals)).toEqual('');
     })
 })
 
@@ -68,5 +68,41 @@ describe('problem with short words', function () {
         expect(suggest('épée du feu', proposals)).toEqual('Epée de feu');
         expect(suggest('épée du fei', proposals)).toEqual('Epée de feu');
         expect(suggest('pée du fei', proposals)).toEqual('Epée de feu');
+    })
+})
+
+describe('chaines trop distantes', function () {
+    it('should not return any string when input has too much distance', function () {
+        const proposals = [
+            'Flêche acide de Melf',
+            'Flétrissure horrible d\'Abi-Dalsim',
+            'Sphère résiliente d\'Otiluke',
+            'Main impérieuse de Bigby',
+            'Coffre en bois ouvragé',
+            'Chest you can open with a key',
+            'Coffre en métal rouillé',
+            'Sacoche en cuir véritable',
+            'Potion de rapidité'
+        ]
+        expect(suggest('main imperieuse de bigby', proposals, {
+            full: true,
+            count: Infinity,
+            maxDistance: Infinity
+        })).toEqual([
+            { distance: 0, proposal: 'Main impérieuse de Bigby' },
+            { distance: 16, proposal: 'Flêche acide de Melf' },
+            { distance: 16, proposal: 'Chest you can open with a key' },
+            { distance: 16, proposal: 'Potion de rapidité' },
+            { distance: 17, proposal: 'Coffre en bois ouvragé' },
+            { distance: 17, proposal: 'Sacoche en cuir véritable' },
+            { distance: 18, proposal: 'Coffre en métal rouillé' },
+            { distance: 24, proposal: "Sphère résiliente d'Otiluke" },
+            { distance: 28, proposal: "Flétrissure horrible d'Abi-Dalsim" }
+        ])
+        expect(suggest('main imperieuse de bigby', proposals)).toBe('Main impérieuse de Bigby')
+        expect(suggest('maix imperieuxx de bigbx', proposals)).toBe('Main impérieuse de Bigby')
+        expect(suggest('maxx ixxeriexxx de bigxx', proposals)).toBe('')
+        expect(suggest('tarte tatin', proposals)).toBe('')
+        expect(suggest('tarte tatinxx', proposals)).toBe('')
     })
 })
